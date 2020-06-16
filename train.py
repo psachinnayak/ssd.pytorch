@@ -180,15 +180,24 @@ def train():
         loss.backward()
         optimizer.step()
         t1 = time.time()
-        loc_loss += loss_l.data[0]
-        conf_loss += loss_c.data[0]
+        
+        # Added by Sachin as documented in the comment for issue here :
+        # https://github.com/amdegroot/ssd.pytorch/issues/173#issuecomment-475612639
+        # This is because PyTorch has deprecated data[] 
+        # As per the PyTorch 0.4.0 migration guide (https://pytorch.org/blog/pytorch-0_4_0-migration-guide/#accumulating-losses) 
+        loc_loss += loss_l.item()
+        conf_loss += loss_c.item()
+        # loc_loss += loss_l.data[0]
+        # conf_loss += loss_c.data[0]
 
         if iteration % 10 == 0:
             print('timer: %.4f sec.' % (t1 - t0))
-            print('iter ' + repr(iteration) + ' || Loss: %.4f ||' % (loss.data[0]), end=' ')
+            print('iter ' + repr(iteration) + ' || Loss: %.4f ||' % (loss.item()), end=' ')
+            # print('iter ' + repr(iteration) + ' || Loss: %.4f ||' % (loss.data[0]), end=' ')
 
         if args.visdom:
-            update_vis_plot(iteration, loss_l.data[0], loss_c.data[0],
+            # update_vis_plot(iteration, loss_l.data[0], loss_c.data[0],
+            update_vis_plot(iteration, loss_l.data[0], loss_c.item(),
                             iter_plot, epoch_plot, 'append')
 
         if iteration != 0 and iteration % 5000 == 0:
